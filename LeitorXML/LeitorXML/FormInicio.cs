@@ -10,11 +10,16 @@ using System.Windows.Forms;
 
 namespace LeitorXML
 {
-    public partial class Form1 : Form
+    public partial class FormInicio : Form
     {
-        public Form1()
+        public FormInicio()
         {
             InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
