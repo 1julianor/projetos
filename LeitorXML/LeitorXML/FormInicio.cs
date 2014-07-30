@@ -17,6 +17,8 @@ namespace LeitorXML
     {
         public static string folderPath = "";
         public static int numeroclaseI = 0;
+        public string combo = "";
+        public string data = "";
         public FormInicio()
         {
             InitializeComponent();
@@ -46,6 +48,25 @@ namespace LeitorXML
         private void button2_Click(object sender, EventArgs e)
         {
             folderPath = caminho.Text;
+            if(folderPath.Equals(""))
+            {
+                System.Windows.Forms.MessageBox.Show("Preencha o caminho da pasta ", "Message");
+                return;
+            }
+            combo = classe.Text;
+            if(combo.Equals(""))
+            {
+                System.Windows.Forms.MessageBox.Show("Preencha a classe ", "Message");
+                return;
+            }
+
+            data = dateTimePicker1.Text;
+            if (data.Equals(""))
+            {
+                System.Windows.Forms.MessageBox.Show("Preencha a classe ", "Message");
+                return;
+            }
+
             string[] files = Directory.GetFiles(folderPath);
             foreach (var item in files)
             {
@@ -108,29 +129,34 @@ namespace LeitorXML
             XmlNodeList listAbril = new EmptyNodeList();
             foreach (XmlElement evento in list)
             {
-                caminho.Text = numeroclaseI.ToString();   
+                
                 XmlNodeList nodeList = evento.ChildNodes;
                 foreach (XmlNode item in nodeList)
                 {
                     if (item.Name.Equals("dtOcorrencia")) 
                     {
-                        DateTime date = DateTime.Parse("2014-04-30");
+                        DateTime date = DateTime.Parse(data);
                         DateTime dataOcorrencia = DateTime.Parse(item.InnerText);
                         if(dataOcorrencia.Month == date.Month)
                         {
-                            listAbril = nodeList;
+                            if(dataOcorrencia.Day == date.Day)
+                            {
+                                listAbril = nodeList;
+                            }
                         }
                     }
                    
                 }
-
+                
+                //numeroclaseI = 0;
                 foreach (XmlNode item in listAbril)
                 {
+                    
                     if (item.Name.Equals("classVeiculo"))
                     {
-                        if (item.InnerText.Substring(0, 1).Equals("I"))
+                        if (item.InnerText.Substring(0, 1).Equals(combo))
                         {
-                            Console.WriteLine(item.InnerText.Substring(0, 1));
+                            Console.WriteLine(item.InnerText +"QTD :"+ numeroclaseI);
                             numeroclaseI++;
                         }
                     }
@@ -155,7 +181,7 @@ namespace LeitorXML
                     }
                 }
             }
-        }
+        }      
 
 
     }
