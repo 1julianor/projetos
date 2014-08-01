@@ -10,7 +10,12 @@ namespace Criptografia
 {
     public class Security
     {
-        HashAlgorithm hasher = null;
+        private static int _iterations = 2;
+        private static int _keySize = 256;
+
+        private static string _hash = "SHA1";
+        private static string _salt = ""; // Random
+        private static string _vector = "8947az34awl34kjq"; // Random
 
         public enum HashProvider
         {
@@ -28,8 +33,9 @@ namespace Criptografia
         /// Cria hash dos dados inseridos.
         /// </summary>
         #region Construtor
-        public Security(HashProvider hashProvider = HashProvider.SHA1)
+        public Security(HashProvider hashProvider = HashProvider.SHA512)
         {
+            
             switch (hashProvider) {
                 case HashProvider.MD5:
                     _algorithm = new MD5CryptoServiceProvider();
@@ -77,25 +83,29 @@ namespace Criptografia
 
         #region Settings
 
-        private static int _iterations = 2;
-        private static int _keySize = 256;
-
-        private static string _hash = "SHA1";
-        private static string _salt = "aselrias38490a32"; // Random
-        private static string _vector = "8947az34awl34kjq"; // Random
+        
 
         #endregion
 
-        public static string Encrypt(string value, string password)
+        public byte[] Encrypt(byte[] valueBytes, string password)
         {
-            return Encrypt<AesManaged>(value, password);
+            _salt = CreateSalt();
+            return ASCIIEncoding.ASCII.GetBytes(Encrypt<AesManaged>(valueBytes, password));
         }
-        public static string Encrypt<T>(string value, string password)
+
+        public string Encrypt(string value, string password)
+        {
+            _salt = CreateSalt();
+            byte[] valueBytes = ASCIIEncoding.ASCII.GetBytes(value);
+            return Encrypt<AesManaged>(valueBytes, password);
+        }
+
+        private string Encrypt<T>(byte[] valueBytes, string password)
                 where T : SymmetricAlgorithm, new()
         {
             byte[] vectorBytes = ASCIIEncoding.ASCII.GetBytes(_vector);
             byte[] saltBytes = ASCIIEncoding.ASCII.GetBytes(_salt);
-            byte[] valueBytes = ASCIIEncoding.ASCII.GetBytes(value);
+            
 
             byte[] encrypted;
             using (T cipher = new T())
@@ -123,15 +133,24 @@ namespace Criptografia
             return Convert.ToBase64String(encrypted);
         }
 
-        public static string Decrypt(string value, string password)
+        public string Decrypt(byte[] valueBytes, string password)
         {
-            return Decrypt<AesManaged>(value, password);
+            _salt = CreateSalt();
+            return Decrypt<AesManaged>(valueBytes, password);
         }
-        public static string Decrypt<T>(string value, string password) where T : SymmetricAlgorithm, new()
+
+        public string Decrypt(string value, string password)
+        {
+            _salt = CreateSalt();
+            byte[] valueBytes = Convert.FromBase64String(value);
+            return Decrypt<AesManaged>(valueBytes, password);
+        }
+
+        private string Decrypt<T>(byte[] valueBytes, string password) where T : SymmetricAlgorithm, new()
         {
             byte[] vectorBytes = ASCIIEncoding.ASCII.GetBytes(_vector);
             byte[] saltBytes = ASCIIEncoding.ASCII.GetBytes(_salt);
-            byte[] valueBytes = Convert.FromBase64String(value);
+            
 
             byte[] decrypted;
             int decryptedByteCount = 0;
@@ -165,6 +184,18 @@ namespace Criptografia
                 cipher.Clear();
             }
             return Encoding.UTF8.GetString(decrypted, 0, decryptedByteCount);
+        }
+
+        /// <summary>
+        /// Creates a random salt to add to a password.
+        /// </summary>
+        /// <returns></returns>
+        public static string CreateSalt()
+        {
+            RandomNumberGenerator rng = RandomNumberGenerator.Create();
+            byte[] number = new byte[32];
+            rng.GetBytes(number);
+            return Convert.ToBase64String(number);
         }
     }
 }

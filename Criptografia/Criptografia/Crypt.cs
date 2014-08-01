@@ -12,21 +12,17 @@ namespace Criptografia
        public Security security;
        public byte[] Encrypt(byte[] array, string senha) 
        {
-           security = new Security(Security.HashProvider.SHA512);
-           return null;
+           security = new Security();
+           return security.Encrypt(array, senha);
        }
 
-        /// <summary>
-        /// Creates a random salt to add to a password.
-        /// </summary>
-        /// <returns></returns>
-        public static string CreateSalt()
-        {
-            RandomNumberGenerator rng = RandomNumberGenerator.Create();
-            byte[] number = new byte[32];
-            rng.GetBytes(number);
-            return Convert.ToBase64String(number);
-        }
+       public string Encrypt(string texto, string senha)
+       {
+           security = new Security();
+           return security.Encrypt(texto, senha);
+       }
+
+        
 
        
        
