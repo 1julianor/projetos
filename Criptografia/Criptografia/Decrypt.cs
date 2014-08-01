@@ -6,13 +6,19 @@ using System.Threading.Tasks;
 
 namespace Criptografia
 {
-    class Decrypt
+    public class Decrypt
     {
-        public Security security;
-        public byte[] DecryptArrayBite(byte[] array, string senha)
+        Security security;
+        public byte[] Decrypt512(byte[] array, string senha)
         {
-            security = new Security(Security.HashProvider.SHA512);
-            return null;
+            security = new Security();
+            return security.Decrypt(array, senha);
+        }
+
+        public string Decrypt512(string texto, string senha)
+        {
+            security = new Security();
+            return security.Decrypt(texto, senha);
         }
     }
 }

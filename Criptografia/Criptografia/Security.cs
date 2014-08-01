@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Criptografia
 {
-    public class Security
+    class Security
     {
         private static int _iterations = 2;
         private static int _keySize = 256;
@@ -133,10 +133,10 @@ namespace Criptografia
             return Convert.ToBase64String(encrypted);
         }
 
-        public string Decrypt(byte[] valueBytes, string password)
+        public byte[] Decrypt(byte[] valueBytes, string password)
         {
             _salt = CreateSalt();
-            return Decrypt<AesManaged>(valueBytes, password);
+            return ASCIIEncoding.ASCII.GetBytes(Decrypt<AesManaged>(valueBytes, password));
         }
 
         public string Decrypt(string value, string password)

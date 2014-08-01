@@ -9,14 +9,14 @@ namespace Criptografia
 {
     public class Crypt
     {
-       public Security security;
-       public byte[] Encrypt(byte[] array, string senha) 
+       Security security;
+       public byte[] Encrypt512(byte[] array, string senha) 
        {
            security = new Security();
            return security.Encrypt(array, senha);
        }
 
-       public string Encrypt(string texto, string senha)
+       public string Encrypt512(string texto, string senha)
        {
            security = new Security();
            return security.Encrypt(texto, senha);
