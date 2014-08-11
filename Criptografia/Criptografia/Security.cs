@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RSACryptoProvider;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,96 +11,73 @@ namespace Criptografia
 {
     class Security
     {
+        #region Private
         private static int _iterations = 2;
         private static int _keySize = 256;
+        
 
-        private static string _hash = "SHA1";
-        private static string _salt = ""; // Random
-        private static string _vector = "8947az34awl34kjq"; // Random
-
-        public enum HashProvider
-        {
-            MD5,
-            SHA1,
-            SHA256,
-            SHA384,
-            SHA512
-        }
-
-        #region Privado
-        private HashAlgorithm _algorithm;
+        private static string _hash;
+        private static string _salt = "4f45566b7377e1a4fc";
+        private static string _vector = "8947az34awl34kjq";
         #endregion
-        /// <summary>
-        /// Cria hash dos dados inseridos.
-        /// </summary>
+
         #region Construtor
-        public Security(HashProvider hashProvider = HashProvider.SHA512)
+        public Security(Hasher.HashProvider hashProvider = Hasher.HashProvider.SHA512)
         {
             
             switch (hashProvider) {
-                case HashProvider.MD5:
-                    _algorithm = new MD5CryptoServiceProvider();
+                case Hasher.HashProvider.MD5:
+                    _hash = Hasher.HashProvider.MD5.ToString();
                     break;
-                case HashProvider.SHA1:
-                    _algorithm = new SHA1Managed();
+                case Hasher.HashProvider.SHA1:
+                    _hash = Hasher.HashProvider.SHA1.ToString();
                     break;
-                case HashProvider.SHA256:
-                    _algorithm = new SHA256Managed();
+                case Hasher.HashProvider.SHA256:
+                    _hash = Hasher.HashProvider.SHA256.ToString();
                     break;
-                case HashProvider.SHA384:
-                    _algorithm = new SHA384Managed();
+                case Hasher.HashProvider.SHA384:
+                    _hash = Hasher.HashProvider.SHA384.ToString();
                     break;
-                case HashProvider.SHA512:
-                    _algorithm = new SHA512Managed();
+                case Hasher.HashProvider.SHA512:
+                    _hash = Hasher.HashProvider.SHA512.ToString();
                     break;
             }
         }
         #endregion
 
-        #region Publico
-        /// <summary>
-        /// Monta hash para algum dado texto.
-        /// </summary>
-        /// <param name="plainText">Texto a ser criado o hash.</param>
-        /// <returns>Hash do texto inserido.</returns>
-        public string GetHash(string plainText)
-        {
-            byte[] cryptoByte = _algorithm.ComputeHash(ASCIIEncoding.ASCII.GetBytes(plainText));
-
-            return Convert.ToBase64String(cryptoByte, 0, cryptoByte.Length);
-        }
-        /// <summary>
-        /// Cria hash para array de bytes.
-        /// </summary>
-        /// <param name="byte">Array a ser criado o hash.</param>
-        /// <returns>Hash do Array de byte inserido.</returns>
-        public string GetHash(byte[] byteArray)
-        {
-            byte[] cryptoByte;
-            cryptoByte = _algorithm.ComputeHash(byteArray);
-            return Convert.ToBase64String(cryptoByte, 0, cryptoByte.Length);
-        }
-        #endregion
-
-        #region Settings
-
-        
-
-        #endregion
-
+        #region Public
         public byte[] Encrypt(byte[] valueBytes, string password)
         {
-            _salt = CreateSalt();
             return ASCIIEncoding.ASCII.GetBytes(Encrypt<AesManaged>(valueBytes, password));
+
         }
 
-        public string Encrypt(string value, string password)
+        public byte[] Encrypt(byte[] conteudo, string pathChave, string nomeChave)
         {
-            _salt = CreateSalt();
-            byte[] valueBytes = ASCIIEncoding.ASCII.GetBytes(value);
-            return Encrypt<AesManaged>(valueBytes, password);
+            return EncryptUsingKey(conteudo, pathChave, nomeChave);
         }
 
+        public byte[] Decrypt(byte[] conteudo, string pathChave, string nomeChave) 
+        {
+            return DecryptUsingKey(conteudo, pathChave, nomeChave);
+        }
+
+        public byte[] Decrypt(byte[] valueBytes, string password)
+        {
+            return ASCIIEncoding.ASCII.GetBytes(Decrypt<AesManaged>(valueBytes, password));
+        }
+        #endregion
+
+        #region Methods Private
+         private byte[] EncryptUsingKey(byte[] conteudo, string pathChave, string nomeChave) 
+         {
+             KeyGenerator key = new KeyGenerator();
+             string keyInfo = key.LoadKey(pathChave, nomeChave);
+             RSAx rsa = new RSAx(keyInfo, GetSizeKey(nomeChave));
+             byte[] CTX = rsa.Encrypt(Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(conteudo)), true);
+             string CipherText = Convert.ToBase64String(CTX);
+             return Encoding.UTF8.GetBytes(CipherText);
+         }
         private string Encrypt<T>(byte[] valueBytes, string password)
                 where T : SymmetricAlgorithm, new()
         {
@@ -133,19 +111,16 @@ namespace Criptografia
             return Convert.ToBase64String(encrypted);
         }
 
-        public byte[] Decrypt(byte[] valueBytes, string password)
+        private byte[] DecryptUsingKey(byte[] conteudo, string pathChave, string nomeChave) 
         {
-            _salt = CreateSalt();
-            return ASCIIEncoding.ASCII.GetBytes(Decrypt<AesManaged>(valueBytes, password));
+            KeyGenerator key = new KeyGenerator();
+            string keyInfo = key.LoadKey(pathChave, nomeChave);
+            RSAx rsa = new RSAx(keyInfo, GetSizeKey(nomeChave));
+            byte[] ETX = Convert.FromBase64String(Encoding.UTF8.GetString(conteudo));
+            byte[] PTX = rsa.Decrypt(ETX, true);
+            string DecryptedString = Encoding.UTF8.GetString(PTX);
+            return Encoding.UTF8.GetBytes(DecryptedString);
         }
-
-        public string Decrypt(string value, string password)
-        {
-            _salt = CreateSalt();
-            byte[] valueBytes = Convert.FromBase64String(value);
-            return Decrypt<AesManaged>(valueBytes, password);
-        }
-
         private string Decrypt<T>(byte[] valueBytes, string password) where T : SymmetricAlgorithm, new()
         {
             byte[] vectorBytes = ASCIIEncoding.ASCII.GetBytes(_vector);
@@ -185,17 +160,14 @@ namespace Criptografia
             }
             return Encoding.UTF8.GetString(decrypted, 0, decryptedByteCount);
         }
+        #endregion
 
-        /// <summary>
-        /// Creates a random salt to add to a password.
-        /// </summary>
-        /// <returns></returns>
-        public static string CreateSalt()
+        #region Utilitarios
+        private int GetSizeKey(string nameKey) 
         {
-            RandomNumberGenerator rng = RandomNumberGenerator.Create();
-            byte[] number = new byte[32];
-            rng.GetBytes(number);
-            return Convert.ToBase64String(number);
+            string[] split = nameKey.Split('#');
+            return int.Parse(split[split.Length - 2]);
         }
+        #endregion
     }
 }

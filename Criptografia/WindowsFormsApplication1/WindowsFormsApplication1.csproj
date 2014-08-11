@@ -79,6 +79,10 @@
       <Project>{322ddb62-8c95-463b-8151-629d16f648bc}</Project>
       <Name>Criptografia</Name>
     </ProjectReference>
+    <ProjectReference Include="..\RSAx\RSAx.csproj">
+      <Project>{5dee8380-3cf6-454d-84af-93b521175f44}</Project>
+      <Name>RSAx</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

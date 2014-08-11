@@ -9,16 +9,12 @@ namespace Criptografia
     public class Decrypt
     {
         Security security;
-        public byte[] Decrypt512(byte[] array, string senha)
+        public byte[] DecryptUsingKey(byte[] conteudo, string nomeChave, string pathChave)
         {
             security = new Security();
-            return security.Decrypt(array, senha);
+            return security.Decrypt(conteudo, pathChave, nomeChave);
         }
 
-        public string Decrypt512(string texto, string senha)
-        {
-            security = new Security();
-            return security.Decrypt(texto, senha);
-        }
+        
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RSACryptoProvider;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -10,21 +11,13 @@ namespace Criptografia
     public class Crypt
     {
        Security security;
-       public byte[] Encrypt512(byte[] array, string senha) 
+       public byte[] EncryptUsingKey(byte[] conteudo, string nomeChave, string pathChave)
        {
-           security = new Security();
-           return security.Encrypt(array, senha);
-       }
-
-       public string Encrypt512(string texto, string senha)
-       {
-           security = new Security();
-           return security.Encrypt(texto, senha);
-       }
-
-        
-
-       
-       
+           if(conteudo == null || nomeChave.Trim() == "" || pathChave.Trim() == "")
+           {
+               return Encoding.UTF8.GetBytes("Parametros incompletos");
+           }
+           return security.Encrypt(conteudo, nomeChave, pathChave);
+       }       
     }
 }
